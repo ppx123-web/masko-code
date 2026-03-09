@@ -27,6 +27,8 @@ final class LocalServer {
         // (avoids TIME_WAIT blocking the port for up to 60s)
         params.allowLocalEndpointReuse = true
         guard let nwPort = NWEndpoint.Port(rawValue: port) else { return }
+        // Bind to all interfaces (0.0.0.0) so the server is reachable beyond localhost
+        params.requiredLocalEndpoint = NWEndpoint.hostPort(host: "0.0.0.0", port: nwPort)
         listener = try NWListener(using: params, on: nwPort)
 
         listener?.newConnectionHandler = { [weak self] connection in
@@ -40,7 +42,7 @@ final class LocalServer {
                 case .ready:
                     self.isRunning = true
                     self.retryCount = 0
-                    print("[masko-desktop] Server listening on port \(self.port)")
+                    print("[masko-desktop] Server listening on 0.0.0.0:\(self.port)")
                 case .failed(let error):
                     self.isRunning = false
                     self.listener?.cancel()
