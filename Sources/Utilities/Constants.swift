@@ -9,6 +9,17 @@ enum Constants {
     #endif
 
     // Local hook server
+    static let defaultServerHost: String = "0.0.0.0"
+    static var serverHost: String {
+        guard let stored = UserDefaults.standard.string(forKey: "serverHost"), !stored.isEmpty else {
+            return defaultServerHost
+        }
+        return stored
+    }
+    static func setServerHost(_ host: String) {
+        UserDefaults.standard.set(host, forKey: "serverHost")
+    }
+
     static let defaultServerPort: UInt16 = 49152
     static var serverPort: UInt16 {
         let stored = UserDefaults.standard.integer(forKey: "serverPort")
