@@ -1,5 +1,5 @@
 import Foundation
-import Network
+
 
 // MARK: - Permission suggestion model (matches Claude Code protocol)
 
@@ -69,7 +69,7 @@ struct ParsedOption {
 struct PendingPermission: Identifiable {
     let id: UUID
     let event: ClaudeEvent
-    let connection: NWConnection
+    let connection: ClientConnection
     let receivedAt: Date
 
     var toolName: String { event.toolName ?? "Unknown" }
@@ -343,7 +343,7 @@ final class PendingPermissionStore {
 
     var count: Int { pending.count }
 
-    func add(event: ClaudeEvent, connection: NWConnection) {
+    func add(event: ClaudeEvent, connection: ClientConnection) {
         let permission = PendingPermission(
             id: UUID(),
             event: event,
@@ -371,7 +371,7 @@ final class PendingPermissionStore {
 
     /// Watch for remote TCP close via both receive() and state handler.
     /// Covers all disconnect scenarios: clean close, SIGKILL, broken pipe.
-    private func monitorConnection(_ connection: NWConnection, permissionId id: UUID) {
+    private func monitorConnection(_ connection: ClientConnection, permissionId id: UUID) {
         // State handler catches cancelled/failed connections that receive() might miss
         connection.stateUpdateHandler = { [weak self] state in
             switch state {
@@ -405,7 +405,7 @@ final class PendingPermissionStore {
     func stopTimers() {
         livenessTimer?.invalidate()
         livenessTimer = nil
-        // Cancel all held NWConnections so they don't linger
+        // Cancel all held ClientConnections so they don't linger
         for perm in pending {
             perm.connection.cancel()
         }
